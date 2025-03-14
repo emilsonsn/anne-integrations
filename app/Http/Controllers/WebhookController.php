@@ -12,6 +12,8 @@ class WebhookController extends Controller
     public function evenHandle(Request $request)
     {
         try{
+            Log::info("Webhook recebido!");
+
             $payload = $request->all();
     
             if (!isset($payload['data']['pessoa']['nome'], $payload['data']['pessoa']['celular'], $payload['type']['id'])) {
@@ -50,12 +52,15 @@ class WebhookController extends Controller
                     tag: $tag
                 );
 
+                Log::info("Tentando cadastrar contato para $nome");
+
                 if(isset($result['error']) && $result['error']){
                     $updateResult = $this->updateContactTag(
                         numphoneber: $telefone,
                         token: $token,
                         tag: $tag
                     );
+                    Log::info("Tag atualizada para para $nome");
                 }
             }
         
@@ -65,6 +70,8 @@ class WebhookController extends Controller
                 token: $token,
                 numberFrom: $numberFrom
             );
+
+            Log::info("Mensagem enviada para $nome");
     
             return response()->json(['message' => 'Webhook processado com sucesso']);
         }catch(Exception $error){
