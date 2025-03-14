@@ -19,8 +19,8 @@ class WebhookController extends Controller
             }
     
             $token = $payload['token'];
-
             $numberFrom = $payload['numero'];
+            $tag = $payload['etiqueta'];
     
             $nome = $payload['data']['pessoa']['nome'];
             $telefone = $payload['data']['pessoa']['celular'];
@@ -43,13 +43,23 @@ class WebhookController extends Controller
             }
     
             if($eventoTipo === 2){
-                $this->adicionarAoCrm(
+                $result = $this->adicionarAoCrm(
                     dadosPessoa: $payload['data']['pessoa'],
-                    token: $token
+                    token: $token,
+                    evento: $eventoTitulo,
+                    tag: $tag
                 );
+
+                if(isset($result['error']) && $result['error']){
+                    $updateResult = $this->updateContactTag(
+                        numphoneber: $telefone,
+                        token: $token,
+                        tag: $tag
+                    );
+                }
             }
         
-            $this->enviarMensagem(
+            $result =  $this->enviarMensagem(
                 telefone: $telefone,
                 mensagem: $mensagem,
                 token: $token,
@@ -81,25 +91,43 @@ class WebhookController extends Controller
 
     private function enviarMensagem($telefone, $mensagem, $token, $numberFrom)
     {
-        Http::withToken($token)
-        ->post('https://api.wts.chat/chat/v1/message/send', [
+        $payload = [
             'from' => $numberFrom,
             'to' => $telefone,
             'body' => [
                 'text' => $mensagem
             ]
-        ]);
+        ];
+        
+        $response = Http::withToken($token)
+            ->post('https://api.wts.chat/chat/v1/message/send', $payload);
+
+        return $response->json();
     }
 
-    private function adicionarAoCrm($dadosPessoa, $token)
+    private function adicionarAoCrm($dadosPessoa, $token, $evento, $tag)
     {
-        Http::withToken($token)
-            ->post('https://api.wtschat.com.br/v1/contact', [
-                'phone' => $dadosPessoa['celular'],
-                'name' => $dadosPessoa['nome'],
-                'email' => $dadosPessoa['email'] ?? null,
-                'tags' => [$dadosPessoa['instituicao'] ?? 'Evento']
-            ]);
+        $payload = [
+            'phoneNumber' => $dadosPessoa['celular'],
+            'name' => $dadosPessoa['nome'],
+            'email' => $dadosPessoa['email'] ?? null,
+            'tagNames' => [$tag]
+        ];
+
+        $response = Http::withToken($token)
+            ->post('https://api.wts.chat/core/v1/contact', $payload);
+        return $response->json();
     }
+
+    private function updateContactTag($numphoneber, $token, $tag)
+    {
+        $response = Http::withToken($token)
+            ->post("https://api.wts.chat/core/v1/contact/phonenumber/{$numphoneber}/tags", [
+            'tagNames' => [$tag],
+            'operation' => 'InsertIfNotExists'
+        ]);
     
+        return $response->json();
+    }    
+
 }
