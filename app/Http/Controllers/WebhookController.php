@@ -19,6 +19,8 @@ class WebhookController extends Controller
             }
     
             $token = $payload['token'];
+
+            $numberFrom = $payload['numero'];
     
             $nome = $payload['data']['pessoa']['nome'];
             $telefone = $payload['data']['pessoa']['celular'];
@@ -50,7 +52,8 @@ class WebhookController extends Controller
             $this->enviarMensagem(
                 telefone: $telefone,
                 mensagem: $mensagem,
-                token: $token
+                token: $token,
+                numberFrom: $numberFrom
             );
     
             return response()->json(['message' => 'Webhook processado com sucesso']);
@@ -76,10 +79,11 @@ class WebhookController extends Controller
         };
     }
 
-    private function enviarMensagem($telefone, $mensagem, $token)
+    private function enviarMensagem($telefone, $mensagem, $token, $numberFrom)
     {
         Http::withToken($token)
         ->post('https://api.wts.chat/chat/v1/message/send', [
+            'from' => $numberFrom,
             'to' => $telefone,
             'body' => [
                 'text' => $mensagem
@@ -91,11 +95,11 @@ class WebhookController extends Controller
     {
         Http::withToken($token)
             ->post('https://api.wtschat.com.br/v1/contact', [
-            'phone' => $dadosPessoa['celular'],
-            'name' => $dadosPessoa['nome'],
-            'email' => $dadosPessoa['email'] ?? null,
-            'tags' => [$dadosPessoa['instituicao'] ?? 'Evento']
-        ]);
+                'phone' => $dadosPessoa['celular'],
+                'name' => $dadosPessoa['nome'],
+                'email' => $dadosPessoa['email'] ?? null,
+                'tags' => [$dadosPessoa['instituicao'] ?? 'Evento']
+            ]);
     }
     
 }
