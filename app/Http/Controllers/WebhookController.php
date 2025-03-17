@@ -85,16 +85,16 @@ class WebhookController extends Controller
         }
     }
 
-    private function getMensagemPorTipo($tipo, $nome, $evento)
+    private function getMensagemPorTipo($tipo, $nome, $evento): string|null
     {
         return match ((int) $tipo) {
-            2 => "Olá, $nome! Vimos que a sua inscrição no evento $evento foi confirmada com sucesso! Agora é só aguardar o grande dia chegar.\n\nPara saber mais detalhes sobre o evento e a sua inscrição, digite confirmado ou confirmada que eu te conto tudo, até mais!",
-            3 => "Olá, $nome! Recebemos o seu pedido de cancelamento da inscrição no evento $evento. Lamentamos que não poderá participar desta vez.\n\nCaso mude de ideia ou precise de ajuda para se inscrever em outro evento, é só me avisar! Estamos à disposição. Mas se você quiser conversar com os nossos atendentes e organizadores, digite atendimento",
-            7 => "Olá, $nome! Vimos que você efetuou o check-in no evento $evento. Que incrível!\n\nTemos várias atividades acontecendo durante o evento. Gostaria de receber atualizações sobre as melhores informações até o término? Então, digite a palavra cheguei abaixo e aproveite o evento. Só digitar cheguei",
-            12 => "Olá, $nome! Informamos que o estorno da sua compra foi processado com sucesso. O valor será devolvido conforme as políticas do seu método de pagamento.\n\nCaso tenha alguma dúvida ou precise de ajuda para outras compras, é só me avisar! Estamos aqui para ajudar. Digite ajuda que te transferimos para o atendimento sobre dúvidas. Só digitar ajuda",
+            2 => "✅ Inscrição Confirmada\nOlá, $nome! Vimos que a sua inscrição no evento $evento foi confirmada com sucesso! Agora é só aguardar o grande dia e horário chegar para acontecer.\nPara saber mais detalhes sobre o evento e a sua inscrição, digite apenas o numeral *2* que eu te atualizamos tudo sobre o evento!",
+            3 => "❌ Inscrição Cancelada\nOlá, $nome! Recebemos o seu pedido de cancelamento da inscrição no evento $evento. Lamentamos que não poderá participar desta vez.\nCaso mude de ideia ou precise de ajuda para se inscrever em outro evento, é só me avisar! Para falar com nossos atendentes, digite o numeral *3*",
+            7 => "📍 Check-in Realizado\nOlá, $nome! Vimos que você efetuou o check-in no evento $evento. Que incrível!\nTemos várias atividades acontecendo. Quer receber atualizações durante o evento? Digite o numeral *1*",
+            12 => "💸 Compra Estornada\nOlá, $nome! O estorno da sua compra no evento $evento foi processado com sucesso.\nCaso tenha dúvidas ou precise de ajuda com outras compras, é só me avisar. Digite o numeral *4* e te redirecionamos para o atendimento.",
             default => null
         };
-    }
+    }    
 
     private function enviarMensagem($telefone, $mensagem, $token, $numberFrom)
     {
